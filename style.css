@@ -1,0 +1,475 @@
+
+body {
+    background-color: rgb(224, 225, 222);
+    padding: 150px;
+}
+
+body.inModal{
+    padding: 0;
+    margin: 0;
+    overflow: hidden; 
+}
+
+#resetLayout {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+
+  background: rgb(6, 20, 98);
+  color: rgb(224, 225, 222);
+  font-family: "alte-haas-grotesk-bold", serif;
+  cursor: pointer;
+}
+
+#resetLayout:hover {
+  opacity: 0.85;
+}
+
+
+.intlaytwo {
+    width: 120px;
+    height: 120px;
+    padding: 50px;
+    border-radius: 25px;
+    justify-content: center; 
+    align-items: center;
+    overflow: visible;
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold";
+    background-color: rgb(185, 183, 164);
+    z-index: -1;
+}
+
+.intlayone {
+    width: 200px;
+    height: 200px;
+    border-radius: 25px;
+    text-align: center;
+    overflow: visible;
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold", serif;
+    background-color: rgb(6, 20, 98);
+    z-index: 2;
+    }
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modalOverlay.isOpen {
+    display: flex;
+}
+
+.modalWindow {
+    width: min(80vw, 720px);
+    height: min(80vh, 720px);
+    background: rgb(224, 225, 222);
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+
+.modalClose {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.35);
+    color: white;
+    font-size: 22px;
+    line-height: 36px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.modalFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: white;
+}
+
+.box {
+    position: fixed;
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    border: none;
+    overflow: hidden;
+}
+
+.box2 {
+    position: fixed;
+    left: 500px;
+    top: 25%;
+    background: transparent;
+
+}
+
+.box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+}
+
+.box.caught img {
+    filter: brightness(0.45);
+}
+
+.box::after{
+  background: transparent !important;  
+  color: var(--ink, rgb(255, 255, 255)) !important; 
+}
+
+.box:hover img,
+.box:hover .imgWrap{
+  filter: none !important;            
+  transition: none !important;
+}
+
+/* .box::after{
+  content: attr(data-word);
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  color: var(--ink);
+
+  font-family: "alte-haas-grotesk-bold", serif;
+  font-size: 16px;
+  text-align: center;
+  padding: 12px;          
+  line-height: 1.25;
+
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+
+.box:hover::after{ opacity: 0; }
+
+/* keep vibrate, REMOVE brightness filter */
+.box:hover .imgWrap{
+  animation: vibrate 0.15s infinite;
+  filter: none;
+} */
+
+.box.caught:hover::after {
+    opacity: 1;
+    animation: vibrate 0.15s infinite;
+}
+
+
+.box img {
+    pointer-events: none;
+}
+
+.box7 {
+  margin-left: auto;
+  margin-right: auto;
+
+  width: 400px;
+  height: 400px;
+  padding: 25px;
+
+  box-sizing: border-box;
+
+  border-radius: 25px;
+  background-color: rgb(6, 20, 98);
+  color: rgb(224, 225, 222);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 1; 
+  font-family: "alte-haas-grotesk-bold", serif;
+  text-align: center;
+}
+
+
+
+
+.imgWrap {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.imgWrap img {
+    pointer-events: none;
+
+}
+
+@keyframes vibrate {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-1px, 1px); }
+  40%  { transform: translate(1px, -1px); }
+  60%  { transform: translate(-1px, -1px); }
+  80%  { transform: translate(1px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+
+.box:hover .imgWrap {
+  animation: vibrate 0.15s infinite;
+    filter: brightness(0.5);
+  transition: filter 0.2s ease;
+}
+
+.box img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.2s ease;
+}
+
+.box:hover img {
+  filter: brightness(0.5);
+}
+
+.box::after {
+  content: attr(data-word);
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  padding: 12px;
+  box-sizing: border-box;
+
+  color: rgb(224, 225, 222);
+  font-family: "alte-haas-grotesk-bold", serif;
+  font-size: 14px;
+  line-height: 1.2;
+
+  background: rgba(6, 20, 98, 0.25);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* show words on hover */
+.box:hover::after {
+  opacity: 1;
+}
+
+.controlBtn {
+  position: fixed;
+  bottom: 20px;
+  z-index: 9999;
+
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+
+  background: rgb(6, 20, 98);
+  color: rgb(224, 225, 222);
+  font-family: "alte-haas-grotesk-bold", serif;
+  cursor: pointer;
+}
+
+#resetLayout {
+  right: 20px;
+}
+
+#startRecord {
+  right: 140px;
+}
+
+#stopRecord {
+  right: 300px;
+}
+
+#aboutBtn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9999;
+}
+
+.controlBtn:hover {
+  background: rgb(10, 30, 130);
+}
+.controlBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+/* .intlaysix {
+    width: 350px;
+    height: 350px;
+    padding: 50px;
+    border-radius: 25px;
+    background-color: rgb(6, 20, 98);
+    color: rgb(224, 225, 222);
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold", serif;
+    z-index: -7;
+}
+
+.intlayfive {
+    width: 300px;
+    height: 300px;
+    padding: 50px;
+    border-radius: 25px;
+    background-color: rgb(6, 20, 98);
+    color: rgb(224, 225, 222);
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold", serif;
+    z-index: -6;
+}
+
+.intlayfour {
+    width: 250px;
+    height: 250px;
+    padding: 50px;
+    border-radius: 25px;
+    background-color: rgb(185, 183, 164);
+    color: rgb(224, 225, 222);
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold", serif;
+    z-index: -5;
+}
+
+.intlaythree {
+    width: 200px;
+    height: 200px;
+    padding: 50px;
+    border-radius: 25px;
+    background-color: rgb(6, 20, 98);
+    color: rgb(224, 225, 222);
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold", serif;
+    z-index: -3;
+} */
+
+/* .box3 {
+    position: fixed;
+    left: 500px;
+    top: 25%;
+    transition: left 0.25s ease, top 0.25s ease;
+}
+
+.box4 {
+    position: fixed;
+    left: 500px;
+    top: 25%;
+    transition: left 0.25s ease, top 0.25s ease;
+}
+
+.box5 {
+    position: fixed;
+    left: 500px;
+    top: 25%;
+    transition: left 0.25s ease, top 0.25s ease;
+}
+
+.box6 {
+    position: fixed;
+    left: 500px;
+    top: 25%;
+    transition: left 0.25s ease, top 0.25s ease;
+} */
+
+/* body {
+    background-color: rgb(224 225	222);
+    padding: 150px;
+}
+
+.intlayone {
+    width: 300px;
+    border-radius: 25px;
+    height: 300px;
+    padding: 50px;
+    background-color: rgb(185	183	164);
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold";
+
+}
+
+.intlaytwo {
+    width: 300px;
+    border-radius: 25px;
+    height: 300px;
+    padding: 50px;
+    background-color: rgb(6, 20, 98);
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold";
+
+}
+
+.box {
+  position: fixed;      
+  left: 100px;            
+  top: 100px;
+  transition: left 0.25s ease, top 0.25s ease; 
+} */
+
+/* 
+button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 4rem;
+  width: 10rem;
+  font-size: 1.5rem;
+  border-radius: 5px;
+  border: none;
+  box-shadow: 1px 1px 5px black;
+  background-color: white;
+}
+
+#runawayBtn1 {
+    font-family: "Alte Haas Grotesk Bold", sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    width: 300px;
+    border-radius: 25px;
+    height: 300px;
+    padding: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgb(	185	183	164);
+    text-align: center;
+    
+} */
