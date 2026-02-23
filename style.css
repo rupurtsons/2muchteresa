@@ -1,6 +1,6 @@
 
 body {
-    background-color: rgb(224, 225, 222);
+    background: transparent;
     padding: 150px;
 }
 
@@ -30,6 +30,21 @@ body.inModal{
   opacity: 0.85;
 }
 
+#bgVideo{
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -9999;
+  pointer-events: none;
+}
+#canvas{
+  position: fixed;
+  inset: 0;
+  z-index: -9998;
+}
+body{ background: transparent; }
 
 .intlaytwo {
     width: 120px;
