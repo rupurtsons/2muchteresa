@@ -1,4 +1,4 @@
-console.log("moda.js loaded (CLEAN REWRITE)");
+console.log("moda.js loaded (CLEAN REWRITE v2)");
 
 // =====================
 // Helpers
@@ -15,6 +15,26 @@ function rectsOverlap(a, b) {
     a.top >= b.bottom
   );
 }
+
+let __imgAnchorCount = 0;
+
+textScroll.innerHTML = textScroll.innerHTML.replace(
+  /\[IMG:\s*([^\]]+)\]/g,
+  (_m, src) => {
+    __imgAnchorCount += 1;
+    const anchorId = `imgAnchor_${__imgAnchorCount}`;
+    const cleanSrc = src.trim();
+
+    return `
+      <span id="${anchorId}" class="imgAnchor"></span>
+      <div class="box inlineImage intlayone" data-anchor="${anchorId}" data-offset-x="0" data-offset-y="0">
+        <span class="imgWrap">
+          <img src="${cleanSrc}" alt="">
+        </span>
+      </div>
+    `;
+  }
+);
 
 // =====================
 // Ensure scroll containers exist
@@ -43,9 +63,9 @@ const S = new Map();
 
 const FREEZE_GAP = 10;
 
-const FLEE_RADIUS = 80;  // how close mouse has to get
-const FORCE = 0.06;      // push strength
-const DAMPING = 0.90;    // slow down
+const FLEE_RADIUS = 80;     // how close mouse has to get
+const FORCE = 0.06;         // push strength
+const DAMPING = 0.90;       // slow down
 const DRIFT_FORCE = 0.35;
 const DRIFT_INTERVAL = 350;
 
@@ -65,6 +85,35 @@ let mouseY = -99999;
 });
 
 // =====================
+// GIF Cursor (inside moda / textScroll)
+// IMPORTANT: You must have <img id="gifCursor" ...> in your HTML.
+// Best: put it INSIDE #textScroll so it's positioned correctly.
+// =====================
+function initGifCursor() {
+  const gifCursor = document.getElementById("gifCursor");
+  if (!gifCursor || !USE_SCROLL_CONTAINER) return;
+
+  // show only inside moda scroll
+  gifCursor.style.display = "none";
+
+  scrollEl.addEventListener("mouseenter", () => {
+    gifCursor.style.display = "block";
+  });
+
+  scrollEl.addEventListener("mouseleave", () => {
+    gifCursor.style.display = "none";
+  });
+
+  scrollEl.addEventListener("mousemove", (e) => {
+    const r = scrollEl.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    gifCursor.style.left = x + "px";
+    gifCursor.style.top = y + "px";
+  });
+}
+
+// =====================
 // Zoom overlay
 // =====================
 let zoomOverlay, zoomImg, zoomCloseBtn;
@@ -74,38 +123,44 @@ function ensureZoomOverlay() {
 
   zoomOverlay = document.createElement("div");
   zoomOverlay.id = "imageOverlay";
-  zoomOverlay.style.position = "fixed";
-  zoomOverlay.style.inset = "0";
-  zoomOverlay.style.display = "none";
-  zoomOverlay.style.alignItems = "center";
-  zoomOverlay.style.justifyContent = "center";
-  zoomOverlay.style.background = "rgba(224, 225, 222, 0.95)";
-  zoomOverlay.style.zIndex = "99999";
+  Object.assign(zoomOverlay.style, {
+    position: "fixed",
+    inset: "0",
+    display: "none",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(224, 225, 222, 0.95)",
+    zIndex: "99999",
+  });
   zoomOverlay.setAttribute("aria-hidden", "true");
 
   zoomImg = document.createElement("img");
   zoomImg.id = "imageOverlayImg";
-  zoomImg.style.maxWidth = "90vw";
-  zoomImg.style.maxHeight = "90vh";
-  zoomImg.style.objectFit = "contain";
+  Object.assign(zoomImg.style, {
+    maxWidth: "90vw",
+    maxHeight: "90vh",
+    objectFit: "contain",
+  });
 
   zoomCloseBtn = document.createElement("button");
   zoomCloseBtn.type = "button";
   zoomCloseBtn.textContent = "×";
-  zoomCloseBtn.style.position = "fixed";
-  zoomCloseBtn.style.top = "12px";
-  zoomCloseBtn.style.right = "12px";
-  zoomCloseBtn.style.width = "44px";
-  zoomCloseBtn.style.height = "44px";
-  zoomCloseBtn.style.border = "none";
-  zoomCloseBtn.style.borderRadius = "999px";
-  zoomCloseBtn.style.background = "rgba(0,0,0,0.35)";
-  zoomCloseBtn.style.color = "white";
-  zoomCloseBtn.style.fontSize = "28px";
-  zoomCloseBtn.style.lineHeight = "44px";
-  zoomCloseBtn.style.cursor = "pointer";
-  zoomCloseBtn.style.display = "none";
-  zoomCloseBtn.style.zIndex = "100000";
+  Object.assign(zoomCloseBtn.style, {
+    position: "fixed",
+    top: "12px",
+    right: "12px",
+    width: "44px",
+    height: "44px",
+    border: "none",
+    borderRadius: "999px",
+    background: "rgba(0,0,0,0.35)",
+    color: "white",
+    fontSize: "28px",
+    lineHeight: "44px",
+    cursor: "pointer",
+    display: "none",
+    zIndex: "100000",
+  });
 
   zoomOverlay.appendChild(zoomImg);
   document.body.appendChild(zoomOverlay);
@@ -170,13 +225,17 @@ function addFunkyText() {
   const blocks = raw.split(/\n{2,}/);
 
   // Put each paragraph in its own block span
-  p.innerHTML = blocks.map((b) => `<span class="word">${b}</span>`).join("\n\n");
+  p.innerHTML = blocks.map((b) => `<span class="word"></span>`).join("\n\n");
+  const wordSpans = Array.from(p.querySelectorAll(".word"));
+  wordSpans.forEach((span, idx) => {
+    span.textContent = blocks[idx] || "";
+  });
 
-  // IMPORTANT: append into scrollInner so boxes + text share coordinate space
+  // Append into scrollInner so boxes + text share coordinate space
   rootEl.appendChild(p);
 
   // Convert each paragraph into letter spans (preserve single newlines)
-  p.querySelectorAll(".word").forEach((word) => {
+  wordSpans.forEach((word) => {
     const text = word.textContent;
     word.textContent = "";
 
@@ -215,7 +274,10 @@ function apply(box) {
 function getBounds() {
   // In scroll mode, allow y to extend down the content
   const w = rootEl.clientWidth || scrollEl.clientWidth || window.innerWidth;
-  const h = Math.max(rootEl.scrollHeight || 0, scrollEl.clientHeight || window.innerHeight);
+  const h = Math.max(
+    rootEl.scrollHeight || 0,
+    scrollEl.clientHeight || window.innerHeight
+  );
   return { w, h };
 }
 
@@ -249,6 +311,14 @@ function findFreezeSpot(box, x, y) {
   const frozen = getFrozenRects(box);
   const { w: bw, h: bh } = getBounds();
 
+  if (!frozen.length) {
+    return {
+      x: clamp(x, 0, bw - s.w),
+      y: clamp(y, 0, bh - s.h),
+    };
+  }
+
+  // nearest frozen rect to the attempted location
   let nearest = frozen[0];
   let bestD = Infinity;
 
@@ -276,6 +346,7 @@ function findFreezeSpot(box, x, y) {
   for (const c of candidates) {
     if (isFreeAt(box, c.x, c.y)) return c;
   }
+
   return {
     x: clamp(x, 0, bw - s.w),
     y: clamp(y, 0, bh - s.h),
@@ -314,7 +385,7 @@ function initialPlaceUnanchored(box, i) {
   const s = S.get(box);
   const { w, h } = getBounds();
 
-  // simple gentle random placement
+  // gentle random placement
   s.x = clamp((w * 0.1) + Math.random() * (w * 0.8 - s.w), 0, w - s.w);
   s.y = clamp(120 + i * (s.h + 40) + (Math.random() - 0.5) * 30, 0, h - s.h);
 
@@ -327,8 +398,8 @@ function tick() {
   for (const box of boxes) {
     const s = S.get(box);
     if (!s || s.stopped) continue;
+    
 
-    // mouse repulsion only matters in visible viewport
     const cx = s.x + s.w / 2;
     const cy = s.y + s.h / 2;
 
@@ -369,9 +440,7 @@ function drift() {
 // =====================
 function init() {
   addFunkyText();
-
-  // Make sure boxes are inside scrollInner if you want them to scroll with text
-  // (If you keep them outside, they'll still work but won't scroll with text)
+  initGifCursor();
 
   boxes.forEach((box, i) => {
     // measure size
@@ -401,6 +470,7 @@ function init() {
     // Click behavior: 1st click freeze, 2nd click zoom
     box.addEventListener("click", (e) => {
       e.preventDefault();
+
       const s = S.get(box);
       if (!s) return;
 

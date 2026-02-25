@@ -10,6 +10,7 @@ const DRIFT_INTERVAL = 350;
 const JITTER = 30;
 const FREEZE_GAP = 10;
 
+
 let mouseX = -99999;
 let mouseY = -99999;
 
@@ -25,20 +26,27 @@ function clamp(v, min, max) {
 const modalOverlay = document.getElementById("modalOverlay");
 const modalFrame = document.getElementById("modalFrame");
 const modalClose = document.getElementById("modalClose");
+const cursor = document.getElementById("cursor");
+
+window.addEventListener("mousemove", (e) => {
+  cursor.style.left = e.clientX + "px";
+  cursor.style.top  = e.clientY + "px";
+});
+
+window.addEventListener("mouseleave", () => {
+  if (cursor) cursor.style.display = "none";
+});
+window.addEventListener("mouseenter", () => {
+  if (cursor && !modalOverlay.classList.contains("isOpen")) cursor.style.display = "block";
+});
 
 function openModal(url) {
   if (!modalOverlay || !modalFrame || !url) return;
   modalFrame.src = url;
   modalOverlay.classList.add("isOpen");
   modalOverlay.setAttribute("aria-hidden", "false");
-}
 
-const aboutBtn = document.getElementById("aboutBtn");
-
-if (aboutBtn) {
-  aboutBtn.addEventListener("click", () => {
-    openModal(aboutBtn.dataset.link);
-  });
+  if (cursor) cursor.style.display = "none";  // hide parent cursor
 }
 
 function closeModal() {
@@ -46,8 +54,9 @@ function closeModal() {
   modalOverlay.classList.remove("isOpen");
   modalOverlay.setAttribute("aria-hidden", "true");
   modalFrame.src = "";
-}
 
+  if (cursor) cursor.style.display = "block"; // show parent cursor again
+}
 if (modalOverlay && modalClose) {
   modalClose.addEventListener("click", closeModal);
   modalOverlay.addEventListener("click", (e) => {

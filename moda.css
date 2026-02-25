@@ -17,6 +17,21 @@ body{
   color: var(--ink);
 }
 
+/* hide real cursor inside this popup page */
+html, body, * { cursor: none !important; }
+
+/* gif cursor */
+#gifCursor{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 60px;
+  height: auto;
+  pointer-events: none;
+  z-index: 10000000;
+  transform: translate(-50%, -50%);
+  display: none;
+}
 /* if you still use this class somewhere */
 body.inModal{
   padding: 0;
@@ -95,7 +110,7 @@ body.inModal{
   border-radius: 10px;
 }
 
-/* this is the coordinate space for anchored floating boxes */
+/* coordinate space for anchored floating boxes */
 #scrollInner{
   position: relative;
   min-height: 100%;
@@ -141,7 +156,7 @@ body.inModal{
    (scroll WITH text)
 ========================= */
 .box{
-  /* IMPORTANT: your JS positions these with transform translate3d */
+  /* IMPORTANT: JS positions these with transform translate3d */
   position: absolute;
   left: 0;
   top: 0;
@@ -205,13 +220,13 @@ body.inModal{
 
 .box:hover::after{ opacity: 1; }
 
-/* keep vibrate, REMOVE brightness filter */
+/* vibrate on hover (single clean version) */
 .box:hover .imgWrap{
   animation: vibrate 0.15s infinite;
-  filter: none;
+  filter: brightness(0.5);
 }
 
-/* vibrate on hover (your original vibe) */
+/* vibrate keyframes */
 @keyframes vibrate{
   0%   { transform: translate(0, 0); }
   20%  { transform: translate(-1px, 1px); }
@@ -219,11 +234,6 @@ body.inModal{
   60%  { transform: translate(-1px, -1px); }
   80%  { transform: translate(1px, 1px); }
   100% { transform: translate(0, 0); }
-}
-
-.box:hover .imgWrap{
-  animation: vibrate 0.15s infinite;
-  filter: brightness(0.5);
 }
 
 /* =========================
@@ -244,7 +254,7 @@ body.inModal{
    (JS creates inline styles but this helps)
 ========================= */
 #imageOverlay{
-  position: fixed;
+  /* position: fixed; */
   inset: 0;
   background: rgba(224, 225, 222, 0.95);
   display: none;
@@ -257,4 +267,24 @@ body.inModal{
   max-width: 90vw;
   max-height: 90vh;
   object-fit: contain;
+}
+
+.inlineImage{
+  position: relative;   /* NOT absolute */
+  display: block;
+  margin: 40px auto;    /* space around image */
+  width: 260px;
+}
+
+.box.inlineImage{
+  width: min(320px, 70vw);
+  aspect-ratio: auto;
+  overflow: visible;
+}
+
+.box.inlineImage img{
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }

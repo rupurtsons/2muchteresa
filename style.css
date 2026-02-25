@@ -4,6 +4,32 @@ body {
     padding: 150px;
 }
 
+/* hide real cursor */
+html, body {
+  cursor: none;
+}
+
+
+/* gif cursor */
+#cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 60px;   /* adjust */
+  height: auto;
+
+  pointer-events: none;
+  z-index: 999999;
+
+  transform: translate(-50%, -50%);
+}
+
+/* Hide the parent-page GIF cursor when modal is open */
+.modalOverlay.isOpen #cursor {
+  display: none !important;
+}
+
 body.inModal{
     padding: 0;
     margin: 0;
@@ -73,6 +99,10 @@ body{ background: transparent; }
     background-color: rgb(6, 20, 98);
     z-index: 2;
     }
+
+#moda {
+  cursor: none;
+}
 
 .modalOverlay {
     position: fixed;
