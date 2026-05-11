@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>characters</title>
+  <link rel="stylesheet" href="inspomoda.css" />
+
+  <style>
+    @font-face {
+      font-family: "alte-haas-grotesk-bold";
+      src: url("alte-haas-grotesk.bold.ttf");
+    }
+
+    @font-face {
+      font-family: "alte-haas-grotesk";
+      src: url("alte-haas-grotesk.regular.ttf");
+    }
+  </style>
+    <style>
+  #textScroll {
+    background-image: url("img/inspo/2.png");
+  }
+</style>
+</head>
+
+<body>
+  <textarea id="funkyText" style="display:none;">
+the faint smell of detergent, 
+vinegar, 
+rust — 
+the grainy texture of wrinkled linen — 
+the cold, screaming air conditioning unit — 
+bright warm light shining through a large window — 
+sitting alone in that large apartment 
+  </textarea>
+
+  <div id="textScroll">
+    <div id="scrollInner"></div>
+  </div>
+
+  <img id="gifCursor" src="img/curser.gif" alt="" />
+
+  <audio id="pageSong" src="music/underwater.mp3" loop preload="auto"></audio>
+
+<audio id="pageSong" src="music/underwater.mp3" loop preload="auto"></audio>
+
+<script>
+  window.addEventListener("load", () => {
+    const song = document.getElementById("pageSong");
+    if (!song) return;
+
+    song.volume = 0.6;
+
+    song.play().catch(() => {
+      document.addEventListener("click", () => {
+        song.play();
+      }, { once: true });
+    });
+  });
+</script>
+
+  <script src="vinmoda.js"></script>
+</body>
+</html>

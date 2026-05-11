@@ -87,18 +87,17 @@ body{ background: transparent; }
 }
 
 .intlayone {
-    width: 200px;
-    height: 200px;
-    border-radius: 25px;
+    width: auto;
+    height: auto;
+    border-radius: 0;
     text-align: center;
     overflow: visible;
     justify-content: center; 
     align-items: center;
-    text-align: center;
     font-family: "alte-haas-grotesk-bold", serif;
-    background-color: rgb(6, 20, 98);
+    background-color: transparent;
     z-index: 2;
-    }
+}
 
 #moda {
   cursor: none;
@@ -158,7 +157,8 @@ body{ background: transparent; }
     overflow: visible;
     background: transparent;
     border: none;
-    overflow: hidden;
+    width: auto;
+    height: auto;
 }
 
 .box2 {
@@ -169,13 +169,13 @@ body{ background: transparent; }
 
 }
 
-.box img {
+/* .box img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
     pointer-events: none;
-}
+} */
 
 .box.caught img {
     filter: brightness(0.45);
@@ -229,9 +229,9 @@ body{ background: transparent; }
 }
 
 
-.box img {
+/* .box img {
     pointer-events: none;
-}
+} */
 
 .box7 {
   margin-left: auto;
@@ -258,12 +258,12 @@ body{ background: transparent; }
 
 
 
-
 .imgWrap {
     display: block;
-    width: 100%;
-    height: 100%;
+    width: auto;
+    height: auto;
 }
+
 
 .imgWrap img {
     pointer-events: none;
@@ -285,13 +285,28 @@ body{ background: transparent; }
   transition: filter 0.2s ease;
 }
 
-.box img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: filter 0.2s ease;
+.box img,
+.imgWrap img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 160px;
+    max-height: 160px;
+    object-fit: contain;
+    pointer-events: none;
+    transition: filter 0.2s ease;
 }
+
+.box.smallBox img {
+  max-width: 100px;
+  max-height: 100px;
+}
+
+.box.largeBox img {
+  max-width: 180px;
+  max-height: 180px;
+}
+
 
 .box:hover img {
   filter: brightness(0.5);

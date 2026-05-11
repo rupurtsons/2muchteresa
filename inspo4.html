@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>characters</title>
+  <link rel="stylesheet" href="inspomoda.css" />
+
+  <style>
+    @font-face {
+      font-family: "alte-haas-grotesk-bold";
+      src: url("alte-haas-grotesk.bold.ttf");
+    }
+
+    @font-face {
+      font-family: "alte-haas-grotesk";
+      src: url("alte-haas-grotesk.regular.ttf");
+    }
+  </style>
+    <style>
+  #textScroll {
+    background-image: url("img/inspo/4.png");
+  }
+</style>
+</head>
+
+<body>
+  <textarea id="funkyText" style="display:none;">
+	I was an alcoholic last year
+	I woke up every morning around 7:30 
+	Got ready for work
+	Woke Razan up and then left for work around 8:30
+	Got to work around 9 then worked until 6
+	Got home around 6:30-7ish 
+	Then made dinner every night with Razan
+	And then we’d have one beer
+	Then two
+	Then a glass of wine
+	Wait Razan I want more
+	Hit the pen
+	Hit the blunt 
+	Another glass of wine
+	Wait, it’s morning somehow 
+	Repeat 
+  </textarea>
+
+  <div id="textScroll">
+    <div id="scrollInner"></div>
+  </div>
+
+  <img id="gifCursor" src="img/curser.gif" alt="" />
+
+  <audio id="pageSong" src="music/novfirst.mp3" loop preload="auto"></audio>
+
+<audio id="pageSong" src="music/novfirst.mp3" loop preload="auto"></audio>
+
+<script>
+  window.addEventListener("load", () => {
+    const song = document.getElementById("pageSong");
+    if (!song) return;
+
+    song.volume = 0.6;
+
+    song.play().catch(() => {
+      document.addEventListener("click", () => {
+        song.play();
+      }, { once: true });
+    });
+  });
+</script>
+
+  <script src="vinmoda.js"></script>
+</body>
+</html>

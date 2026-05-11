@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>characters</title>
+  <link rel="stylesheet" href="inspomoda.css" />
+
+  <style>
+    @font-face {
+      font-family: "alte-haas-grotesk-bold";
+      src: url("alte-haas-grotesk.bold.ttf");
+    }
+
+    @font-face {
+      font-family: "alte-haas-grotesk";
+      src: url("alte-haas-grotesk.regular.ttf");
+    }
+  </style>
+    <style>
+  #textScroll {
+    background-image: url("img/inspo/9.png");
+  }
+</style>
+</head>
+
+<body>
+  <textarea id="funkyText" style="display:none;">
+
+"The body presents the paradox of contained
+and container at once. Thus our attention
+is continually focused upon the boundaries
+or limits of the body; known from an
+exterior, the limits of the body as object;
+known from an interior, the limits of its
+physical extension into space. Lacan has
+described "erotogenic" zones of the body
+as those areas where there are cuts and
+gaps on the body's surface-the lips, the
+anus, the tip of the penis, the slit formed
+by the eyelids, for example. He writes that
+it is these cuts or apertures on the surface of the body which allow the
+sense of "edge," borders, or margins by differentiating the body from
+the organic functions associated with such apertures. Because these
+cuts or apertures are described on the very surface of the subject, they
+have no specular image, no outside that they represent; it is this
+which enables them to be "the 'stuff,' or rather the lining ... [of] the
+very subject that one takes to be the subject of consciousness." 1
+Thus these apertures of ingestion and emission work to constitute the notion
+of the subject, of the individual body and ultimately the self.
+Those products which cross such boundaries thereby become products
+of great cultural attention. What is both inside and outside the
+body (feces, spittle, urine, menstrual blood, etc.) tends to become
+taboo because of its ambiguous and anomalous status. A great deal
+of cultural regulation is required to privatize the erotogenic zones and
+to prohibit the projection of their pleasure within the domain of public
+space, and such regulation simultaneously aids in the development
+not only of the individual subject but also of the 'private space'
+occupied by that subject" (105)
+
+Susan Stuwart "On Longing"
+
+  </textarea>
+
+  <div id="textScroll">
+      <div id="scrollInner"></div>
+    </div>
+
+    <img id="gifCursor" src="img/curser.gif" alt="" />
+
+    
+  <script>
+    window.addEventListener("load", () => {
+      const song = document.getElementById("pageSong");
+      if (!song) return;
+
+      song.volume = 0.6;
+
+      song.play().catch(() => {
+        document.addEventListener("click", () => {
+          song.play();
+        }, { once: true });
+      });
+    });
+  </script>
+
+    <script src="vinmoda.js"></script>
+  </body>
+  </html>

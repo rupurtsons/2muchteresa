@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>characters</title>
+  <link rel="stylesheet" href="inspomoda.css" />
+
+  <style>
+    @font-face {
+      font-family: "alte-haas-grotesk-bold";
+      src: url("alte-haas-grotesk.bold.ttf");
+    }
+
+    @font-face {
+      font-family: "alte-haas-grotesk";
+      src: url("alte-haas-grotesk.regular.ttf");
+    }
+  </style>
+    <style>
+  #textScroll {
+    background-image: url("img/inspo/14.png");
+  }
+</style>
+</head>
+
+<body>
+  <textarea id="funkyText" style="display:none;">
+"Erendira" 2004 Gelatin Silver Print 100 x 100 cm.
+  </textarea>
+
+  <div id="textScroll">
+      <div id="scrollInner"></div>
+    </div>
+
+    <img id="gifCursor" src="img/curser.gif" alt="" />
+
+    
+  <script>
+    window.addEventListener("load", () => {
+      const song = document.getElementById("pageSong");
+      if (!song) return;
+
+      song.volume = 0.6;
+
+      song.play().catch(() => {
+        document.addEventListener("click", () => {
+          song.play();
+        }, { once: true });
+      });
+    });
+  </script>
+
+    <script src="vinmoda.js"></script>
+  </body>
+  </html>

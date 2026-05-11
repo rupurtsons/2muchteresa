@@ -1,0 +1,528 @@
+console.log("moda.js loaded (CLEAN REWRITE v2)");
+
+// =====================
+// Helpers
+// =====================
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function rectsOverlap(a, b) {
+  return !(
+    a.right <= b.left ||
+    a.left >= b.right ||
+    a.bottom <= b.top ||
+    a.top >= b.bottom
+  );
+}
+
+let __imgAnchorCount = 0;
+
+textScroll.innerHTML = textScroll.innerHTML.replace(
+  /\[IMG:\s*([^\]]+)\]/g,
+  (_m, src) => {
+    __imgAnchorCount += 1;
+    const anchorId = `imgAnchor_${__imgAnchorCount}`;
+    const cleanSrc = src.trim();
+
+    return `
+      <span id="${anchorId}" class="imgAnchor"></span>
+      <div class="box inlineImage intlayone" data-anchor="${anchorId}" data-offset-x="0" data-offset-y="0">
+        <span class="imgWrap">
+          <img src="${cleanSrc}" alt="">
+        </span>
+      </div>
+    `;
+  }
+);
+
+// =====================
+// Ensure scroll containers exist
+// =====================
+let scrollEl = document.getElementById("textScroll");
+if (!scrollEl) {
+  scrollEl = document.createElement("div");
+  scrollEl.id = "textScroll";
+  document.body.appendChild(scrollEl);
+}
+
+let rootEl = document.getElementById("scrollInner");
+if (!rootEl) {
+  rootEl = document.createElement("div");
+  rootEl.id = "scrollInner";
+  scrollEl.appendChild(rootEl);
+}
+
+const USE_SCROLL_CONTAINER = !!(scrollEl && rootEl);
+
+// =====================
+// State
+// =====================
+const boxes = Array.from(document.querySelectorAll(".box"));
+const S = new Map();
+
+const FREEZE_GAP = 10;
+
+const FLEE_RADIUS = 80;     // how close mouse has to get
+const FORCE = 0.06;         // push strength
+const DAMPING = 0.90;       // slow down
+const DRIFT_FORCE = 0.35;
+const DRIFT_INTERVAL = 350;
+
+let mouseX = -99999;
+let mouseY = -99999;
+
+// Mouse tracking (relative to scroll container if present)
+(USE_SCROLL_CONTAINER ? scrollEl : window).addEventListener("mousemove", (e) => {
+  if (USE_SCROLL_CONTAINER) {
+    const r = scrollEl.getBoundingClientRect();
+    mouseX = e.clientX - r.left;
+    mouseY = e.clientY - r.top;
+  } else {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  }
+});
+
+// =====================
+// GIF Cursor (inside moda / textScroll)
+// IMPORTANT: You must have <img id="gifCursor" ...> in your HTML.
+// Best: put it INSIDE #textScroll so it's positioned correctly.
+// =====================
+function initGifCursor() {
+  const gifCursor = document.getElementById("gifCursor");
+  if (!gifCursor || !USE_SCROLL_CONTAINER) return;
+
+  // show only inside moda scroll
+  gifCursor.style.display = "none";
+
+  scrollEl.addEventListener("mouseenter", () => {
+    gifCursor.style.display = "block";
+  });
+
+  scrollEl.addEventListener("mouseleave", () => {
+    gifCursor.style.display = "none";
+  });
+
+  scrollEl.addEventListener("mousemove", (e) => {
+    const r = scrollEl.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    gifCursor.style.left = x + "px";
+    gifCursor.style.top = y + "px";
+  });
+}
+
+// =====================
+// Zoom overlay
+// =====================
+let zoomOverlay, zoomImg, zoomCloseBtn;
+
+function ensureZoomOverlay() {
+  if (zoomOverlay) return;
+
+  zoomOverlay = document.createElement("div");
+  zoomOverlay.id = "imageOverlay";
+  Object.assign(zoomOverlay.style, {
+    position: "fixed",
+    inset: "0",
+    display: "none",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(224, 225, 222, 0.95)",
+    zIndex: "99999",
+  });
+  zoomOverlay.setAttribute("aria-hidden", "true");
+
+  zoomImg = document.createElement("img");
+  zoomImg.id = "imageOverlayImg";
+  Object.assign(zoomImg.style, {
+    maxWidth: "90vw",
+    maxHeight: "90vh",
+    objectFit: "contain",
+  });
+
+  zoomCloseBtn = document.createElement("button");
+  zoomCloseBtn.type = "button";
+  zoomCloseBtn.textContent = "×";
+  Object.assign(zoomCloseBtn.style, {
+    position: "fixed",
+    top: "12px",
+    right: "12px",
+    width: "44px",
+    height: "44px",
+    border: "none",
+    borderRadius: "999px",
+    background: "rgba(0,0,0,0.35)",
+    color: "white",
+    fontSize: "28px",
+    lineHeight: "44px",
+    cursor: "pointer",
+    display: "none",
+    zIndex: "100000",
+  });
+
+  zoomOverlay.appendChild(zoomImg);
+  document.body.appendChild(zoomOverlay);
+  document.body.appendChild(zoomCloseBtn);
+
+  function close() {
+    zoomOverlay.style.display = "none";
+    zoomCloseBtn.style.display = "none";
+    zoomOverlay.setAttribute("aria-hidden", "true");
+    zoomImg.src = "";
+  }
+
+  zoomOverlay.addEventListener("click", (e) => {
+    if (e.target === zoomOverlay) close();
+  });
+  zoomCloseBtn.addEventListener("click", close);
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+}
+
+function openImageZoom(src) {
+  if (!src) return;
+  ensureZoomOverlay();
+  zoomImg.src = src;
+  zoomOverlay.style.display = "flex";
+  zoomCloseBtn.style.display = "block";
+  zoomOverlay.setAttribute("aria-hidden", "false");
+}
+
+// =====================
+// Text (textarea or data-line)
+// =====================
+function addFunkyText() {
+  if (document.querySelector(".funky")) return;
+
+  const p = document.createElement("p");
+  p.className = "funky";
+  p.style.pointerEvents = "auto";
+  p.style.zIndex = "0";
+
+  const cfg = document.getElementById("funkyText");
+
+  let raw = "";
+  if (cfg) {
+    if ("value" in cfg) raw = (cfg.value || "").trim();
+    else {
+      const lines = [
+        cfg.dataset.line1,
+        cfg.dataset.line2,
+        cfg.dataset.line3,
+        cfg.dataset.line4,
+      ].filter(Boolean);
+      raw = lines.join("\n\n").trim();
+    }
+  } else {
+    raw = "DEFAULT TEXT";
+  }
+
+  const blocks = raw.split(/\n{2,}/);
+
+  p.innerHTML = blocks.map((b) => `<span class="word"></span>`).join("\n\n");
+  const wordSpans = Array.from(p.querySelectorAll(".word"));
+
+  wordSpans.forEach((span, idx) => {
+    span.textContent = blocks[idx] || "";
+  });
+
+  rootEl.appendChild(p);
+
+  wordSpans.forEach((word) => {
+    const text = word.textContent;
+    word.textContent = "";
+
+    [...text].forEach((char) => {
+      if (char === "\n") {
+        word.appendChild(document.createElement("br"));
+        return;
+      }
+
+      const span = document.createElement("span");
+      span.className = "letter";
+      span.textContent = char;
+      word.appendChild(span);
+    });
+
+      const SCRAMBLE_CHANCE = 1;     // 35% of hovers trigger
+      const SCRAMBLE_COOLDOWN = 350;    // can retrigger faster
+      const SCRAMBLE_MOVE = 10;          // bigger letter movement
+      const SCRAMBLE_ROTATE = 10; 
+      let lastScramble = 2;
+
+    word.addEventListener("mouseenter", () => {
+      const now = Date.now();
+
+      if (now - lastScramble < SCRAMBLE_COOLDOWN) return;
+      if (Math.random() > SCRAMBLE_CHANCE) return;
+
+      lastScramble = now;
+
+      word.querySelectorAll(".letter").forEach((letter) => {
+        letter.style.setProperty(
+          "--x",
+          (Math.random() * SCRAMBLE_MOVE * 2 - SCRAMBLE_MOVE).toFixed(1)
+        );
+        letter.style.setProperty(
+          "--y",
+          (Math.random() * SCRAMBLE_MOVE * 2 - SCRAMBLE_MOVE).toFixed(1)
+        );
+        letter.style.setProperty(
+          "--r",
+          (Math.random() * SCRAMBLE_ROTATE * 2 - SCRAMBLE_ROTATE).toFixed(1)
+        );
+        letter.style.setProperty("--s", "1");
+      });
+
+      window.setTimeout(() => {
+        word.querySelectorAll(".letter").forEach((letter) => {
+          letter.style.setProperty("--x", "0");
+          letter.style.setProperty("--y", "0");
+          letter.style.setProperty("--r", "0");
+          letter.style.setProperty("--s", "1");
+        });
+      }, 450);
+    });
+  });
+}
+function apply(box) {
+  const s = S.get(box);
+  if (!s) return;
+  box.style.transform = `translate3d(${s.x}px, ${s.y}px, 0)`;
+}
+
+function getBounds() {
+  // In scroll mode, allow y to extend down the content
+  const w = rootEl.clientWidth || scrollEl.clientWidth || window.innerWidth;
+  const h = Math.max(
+    rootEl.scrollHeight || 0,
+    scrollEl.clientHeight || window.innerHeight
+  );
+  return { w, h };
+}
+
+function getFrozenRects(exceptBox) {
+  const rects = [];
+  for (const [box, s] of S.entries()) {
+    if (box === exceptBox || !s.stopped) continue;
+    rects.push({
+      left: s.x - FREEZE_GAP,
+      top: s.y - FREEZE_GAP,
+      right: s.x + s.w + FREEZE_GAP,
+      bottom: s.y + s.h + FREEZE_GAP,
+      cx: s.x + s.w / 2,
+      cy: s.y + s.h / 2,
+    });
+  }
+  return rects;
+}
+
+function isFreeAt(box, x, y) {
+  const s = S.get(box);
+  if (!s) return true;
+  const test = { left: x, top: y, right: x + s.w, bottom: y + s.h };
+  return !getFrozenRects(box).some((fr) => rectsOverlap(test, fr));
+}
+
+function findFreezeSpot(box, x, y) {
+  if (isFreeAt(box, x, y)) return { x, y };
+
+  const s = S.get(box);
+  const frozen = getFrozenRects(box);
+  const { w: bw, h: bh } = getBounds();
+
+  if (!frozen.length) {
+    return {
+      x: clamp(x, 0, bw - s.w),
+      y: clamp(y, 0, bh - s.h),
+    };
+  }
+
+  // nearest frozen rect to the attempted location
+  let nearest = frozen[0];
+  let bestD = Infinity;
+
+  const cx = x + s.w / 2;
+  const cy = y + s.h / 2;
+
+  for (const fr of frozen) {
+    const d = Math.hypot(cx - fr.cx, cy - fr.cy);
+    if (d < bestD) {
+      bestD = d;
+      nearest = fr;
+    }
+  }
+
+  const candidates = [
+    { x: nearest.right + FREEZE_GAP, y },
+    { x: nearest.left - FREEZE_GAP - s.w, y },
+    { x, y: nearest.bottom + FREEZE_GAP },
+    { x, y: nearest.top - FREEZE_GAP - s.h },
+  ].map((c) => ({
+    x: clamp(c.x, 0, bw - s.w),
+    y: clamp(c.y, 0, bh - s.h),
+  }));
+
+  for (const c of candidates) {
+    if (isFreeAt(box, c.x, c.y)) return c;
+  }
+
+  return {
+    x: clamp(x, 0, bw - s.w),
+    y: clamp(y, 0, bh - s.h),
+  };
+}
+
+function placeFromAnchor(box) {
+  const anchorId = box.dataset.anchor;
+  if (!anchorId) return false;
+
+  const a = document.getElementById(anchorId);
+  if (!a) return false;
+
+  const ar = a.getBoundingClientRect();
+  const rr = rootEl.getBoundingClientRect();
+
+  const ox = parseFloat(box.dataset.offsetX || "0");
+  const oy = parseFloat(box.dataset.offsetY || "0");
+
+  const s = S.get(box);
+  if (!s) return false;
+
+  // convert anchor rect to scrollInner coordinate space
+  s.x = (ar.left - rr.left) + ox;
+  s.y = (ar.top - rr.top) + oy;
+
+  const { w, h } = getBounds();
+  s.x = clamp(s.x, 0, w - s.w);
+  s.y = clamp(s.y, 0, h - s.h);
+
+  apply(box);
+  return true;
+}
+
+function initialPlaceUnanchored(box, i) {
+  const s = S.get(box);
+  const { w, h } = getBounds();
+
+  // gentle random placement
+  s.x = clamp((w * 0.1) + Math.random() * (w * 0.8 - s.w), 0, w - s.w);
+  s.y = clamp(120 + i * (s.h + 40) + (Math.random() - 0.5) * 30, 0, h - s.h);
+
+  apply(box);
+}
+
+function tick() {
+  const { w: bw, h: bh } = getBounds();
+
+  for (const box of boxes) {
+    const s = S.get(box);
+    if (!s || s.stopped) continue;
+    
+
+    const cx = s.x + s.w / 2;
+    const cy = s.y + s.h / 2;
+
+    const dx = cx - mouseX;
+    const dy = cy - mouseY;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist < FLEE_RADIUS) {
+      const nx = dx / (dist || 1);
+      const ny = dy / (dist || 1);
+      s.vx += nx * FORCE * 45;
+      s.vy += ny * FORCE * 45;
+    }
+
+    s.vx *= DAMPING;
+    s.vy *= DAMPING;
+
+    s.x = clamp(s.x + s.vx, 0, bw - s.w);
+    s.y = clamp(s.y + s.vy, 0, bh - s.h);
+
+    apply(box);
+  }
+
+  requestAnimationFrame(tick);
+}
+
+function drift() {
+  for (const box of boxes) {
+    const s = S.get(box);
+    if (!s || s.stopped) continue;
+    s.vx += (Math.random() - 0.5) * DRIFT_FORCE;
+    s.vy += (Math.random() - 0.5) * DRIFT_FORCE;
+  }
+}
+
+// =====================
+// Init
+// =====================
+function init() {
+  addFunkyText();
+  initGifCursor();
+
+  boxes.forEach((box, i) => {
+    // measure size
+    const r = box.getBoundingClientRect();
+    const w = r.width || 200;
+    const h = r.height || 200;
+
+    // normalize for transform-based positioning
+    box.style.left = "0";
+    box.style.top = "0";
+    box.style.cursor = "pointer";
+
+    S.set(box, {
+      x: 0,
+      y: 0,
+      w,
+      h,
+      vx: 0,
+      vy: 0,
+      stopped: false,
+    });
+
+    // Anchor placement if available, otherwise random placement
+    const didAnchor = placeFromAnchor(box);
+    if (!didAnchor) initialPlaceUnanchored(box, i);
+
+    // Click behavior: 1st click freeze, 2nd click zoom
+    box.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const s = S.get(box);
+      if (!s) return;
+
+      if (!s.stopped) {
+        const spot = findFreezeSpot(box, s.x, s.y);
+        s.x = spot.x;
+        s.y = spot.y;
+        s.vx = 0;
+        s.vy = 0;
+        s.stopped = true;
+        box.classList.add("caught");
+        apply(box);
+        return;
+      }
+
+      const img = box.querySelector("img");
+      if (img) openImageZoom(img.currentSrc || img.src);
+    });
+  });
+
+  requestAnimationFrame(tick);
+  setInterval(drift, DRIFT_INTERVAL);
+}
+
+window.addEventListener("load", init);
+
+// If layout changes (font load, resize), re-anchor boxes that have anchors
+window.addEventListener("resize", () => {
+  boxes.forEach((box) => {
+    if (box.dataset.anchor) placeFromAnchor(box);
+  });
+});
