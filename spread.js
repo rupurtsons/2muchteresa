@@ -1,4 +1,4 @@
-console.log("spread.js loaded (FINAL)");
+console.log("spread.js loaded (FULL FIXED VERSION)");
 
 const boxes = Array.from(document.querySelectorAll(".box"));
 
@@ -7,72 +7,80 @@ const FORCE = 0.05;
 const DAMPING = 0.9;
 const DRIFT_FORCE = 0.6;
 const DRIFT_INTERVAL = 350;
-const JITTER = 30;
 const FREEZE_GAP = 10;
-
 
 let mouseX = -99999;
 let mouseY = -99999;
-
-window.addEventListener("mousemove", (e) => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
-
-function clamp(v, min, max) {
-  return Math.max(min, Math.min(max, v));
-}
 
 const modalOverlay = document.getElementById("modalOverlay");
 const modalFrame = document.getElementById("modalFrame");
 const modalClose = document.getElementById("modalClose");
 const cursor = document.getElementById("cursor");
 
+const S = new Map();
+
 window.addEventListener("mousemove", (e) => {
-  cursor.style.left = e.clientX + "px";
-  cursor.style.top  = e.clientY + "px";
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+
+  if (cursor) {
+    cursor.style.left = e.clientX + "px";
+    cursor.style.top = e.clientY + "px";
+  }
 });
 
 window.addEventListener("mouseleave", () => {
   if (cursor) cursor.style.display = "none";
 });
+
 window.addEventListener("mouseenter", () => {
-  if (cursor && !modalOverlay.classList.contains("isOpen")) cursor.style.display = "block";
+  if (cursor && modalOverlay && !modalOverlay.classList.contains("isOpen")) {
+    cursor.style.display = "block";
+  }
 });
+
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function apply(box) {
+  const s = S.get(box);
+  if (!s) return;
+  box.style.transform = `translate3d(${s.x}px, ${s.y}px, 0)`;
+}
 
 function openModal(url) {
   if (!modalOverlay || !modalFrame || !url) return;
+
   modalFrame.src = url;
   modalOverlay.classList.add("isOpen");
   modalOverlay.setAttribute("aria-hidden", "false");
 
-  if (cursor) cursor.style.display = "none";  // hide parent cursor
+  if (cursor) cursor.style.display = "none";
 }
 
 function closeModal() {
   if (!modalOverlay || !modalFrame) return;
+
   modalOverlay.classList.remove("isOpen");
   modalOverlay.setAttribute("aria-hidden", "true");
   modalFrame.src = "";
 
-  if (cursor) cursor.style.display = "block"; // show parent cursor again
+  if (cursor) cursor.style.display = "block";
 }
+
 if (modalOverlay && modalClose) {
   modalClose.addEventListener("click", closeModal);
+
   modalOverlay.addEventListener("click", (e) => {
     if (e.target === modalOverlay) closeModal();
   });
+
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
 }
 
-const S = new Map(); 
-
-function apply(box) {
-  const s = S.get(box);
-  box.style.transform = `translate3d(${s.x}px, ${s.y}px, 0)`;
-}
 function rectsOverlap(a, b) {
   return !(
     a.right <= b.left ||
@@ -84,8 +92,10 @@ function rectsOverlap(a, b) {
 
 function getFrozenRects(exceptBox) {
   const rects = [];
+
   for (const [box, s] of S.entries()) {
     if (box === exceptBox || !s.stopped) continue;
+
     rects.push({
       left: s.x - FREEZE_GAP,
       top: s.y - FREEZE_GAP,
@@ -95,12 +105,21 @@ function getFrozenRects(exceptBox) {
       cy: s.y + s.h / 2,
     });
   }
+
   return rects;
 }
 
 function isFreeAt(box, x, y) {
   const s = S.get(box);
-  const test = { left: x, top: y, right: x + s.w, bottom: y + s.h };
+  if (!s) return true;
+
+  const test = {
+    left: x,
+    top: y,
+    right: x + s.w,
+    bottom: y + s.h,
+  };
+
   return !getFrozenRects(box).some((fr) => rectsOverlap(test, fr));
 }
 
@@ -108,17 +127,23 @@ function findFreezeSpot(box, x, y) {
   if (isFreeAt(box, x, y)) return { x, y };
 
   const s = S.get(box);
+  if (!s) return { x, y };
+
   const frozen = getFrozenRects(box);
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 
+  if (!frozen.length) return { x, y };
+
   let nearest = frozen[0];
   let bestD = Infinity;
+
   const cx = x + s.w / 2;
   const cy = y + s.h / 2;
 
   for (const fr of frozen) {
     const d = Math.hypot(cx - fr.cx, cy - fr.cy);
+
     if (d < bestD) {
       bestD = d;
       nearest = fr;
@@ -141,10 +166,25 @@ function findFreezeSpot(box, x, y) {
 
   return { x, y };
 }
+
+function refreshBoxSizes() {
+  boxes.forEach((box) => {
+    const s = S.get(box);
+    if (!s) return;
+
+    const r = box.getBoundingClientRect();
+
+    s.w = r.width || box.offsetWidth || 120;
+    s.h = r.height || box.offsetHeight || 120;
+  });
+}
+
 function spreadInitialGrid() {
+  refreshBoxSizes();
+
   const COLS = 5;
   const ROWS = 3;
-  const GAP = 40; 
+  const GAP = 40;
 
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -178,66 +218,58 @@ function spreadInitialGrid() {
   });
 }
 
-
-function spreadStopBottomToTop(gap = 25) {
+function spreadStopEvenly() {
   const N = boxes.length;
   if (!N) return;
+
+  refreshBoxSizes();
 
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 
-  // Measure max box size
-  let maxW = 0, maxH = 0;
-  boxes.forEach((box) => {
-    const s = S.get(box);
-    if (!s) return;
-    maxW = Math.max(maxW, s.w);
-    maxH = Math.max(maxH, s.h);
-  });
+  const padding = 30;
 
-  const cellW = maxW + gap;
-  const cellH = maxH + gap;
+  const usableW = vw - padding * 2;
+  const usableH = vh - padding * 2;
 
-  // Start wide, then shrink columns until height fits
-  let cols = Math.max(1, Math.floor((vw - gap) / cellW) - 1);
-  let rows = Math.ceil(N / cols);
+  const cols = Math.ceil(Math.sqrt(N * (usableW / usableH)));
+  const rows = Math.ceil(N / cols);
 
-  while (rows * cellH + gap * 10 > vh && cols > 8) {
-    cols--;
-    rows = Math.ceil(N / cols);
-  }
-
-  const gridW = cols * cellW;
-  const gridH = rows * cellH;
-
-  const startX = (vw - gridW) / 2;
-  const startY = (vh - gridH) / 2;
+  const cellW = usableW / cols;
+  const cellH = usableH / rows;
 
   boxes.forEach((box, i) => {
     const s = S.get(box);
     if (!s) return;
 
     const col = i % cols;
-    const rowFromTop = Math.floor(i / cols);
-    const row = rows - 1 - rowFromTop; 
+    const row = Math.floor(i / cols);
 
-    s.x = clamp(
-      startX + col * cellW + (maxW - s.w) / 2,
-      gap,
-      vw - s.w - gap
-    );
+    s.x = padding + col * cellW + (cellW - s.w) / 2;
+    s.y = padding + row * cellH + (cellH - s.h) / 2;
 
-    s.y = clamp(
-      startY + row * cellH + (maxH - s.h) / 2,
-      gap,
-      vh - s.h - gap
-    );
+    s.x = clamp(s.x, padding, vw - s.w - padding);
+    s.y = clamp(s.y, padding, vh - s.h - padding);
 
     s.vx = 0;
     s.vy = 0;
     s.stopped = true;
 
+    // box.classList.add("caught");
     apply(box);
+  });
+}
+
+function unstopAll() {
+  boxes.forEach((box) => {
+    const s = S.get(box);
+    if (!s) return;
+
+    s.stopped = false;
+    s.vx = 0;
+    s.vy = 0;
+
+    box.classList.remove("caught");
   });
 }
 
@@ -248,8 +280,8 @@ function init() {
     S.set(box, {
       x: r.left,
       y: r.top,
-      w: r.width || 120,
-      h: r.height || 120,
+      w: r.width || box.offsetWidth || 120,
+      h: r.height || box.offsetHeight || 120,
       vx: 0,
       vy: 0,
       stopped: false,
@@ -261,15 +293,19 @@ function init() {
 
     box.addEventListener("click", (e) => {
       e.preventDefault();
+
       const s = S.get(box);
+      if (!s) return;
 
       if (!s.stopped) {
         const spot = findFreezeSpot(box, s.x, s.y);
+
         s.x = spot.x;
         s.y = spot.y;
         s.vx = 0;
         s.vy = 0;
         s.stopped = true;
+
         box.classList.add("caught");
         apply(box);
         return;
@@ -279,14 +315,16 @@ function init() {
     });
   });
 
-document.getElementById("resetLayout").addEventListener("click", () => {
-  spreadStopBottomToTop(30);
-});
+  const resetButton = document.getElementById("resetLayout");
 
-spreadInitialGrid();
-  const COLS = 5;
-  const ROWS = 3;
-  const GAP = 40; 
+  if (resetButton) {
+    resetButton.addEventListener("click", () => {
+      spreadStopEvenly();
+    });
+  }
+
+  spreadInitialGrid();
+
   requestAnimationFrame(tick);
   setInterval(drift, DRIFT_INTERVAL);
 }
@@ -301,6 +339,7 @@ function tick() {
 
     const cx = s.x + s.w / 2;
     const cy = s.y + s.h / 2;
+
     const dx = cx - mouseX;
     const dy = cy - mouseY;
     const dist = Math.hypot(dx, dy);
@@ -312,8 +351,10 @@ function tick() {
 
     s.vx *= DAMPING;
     s.vy *= DAMPING;
+
     s.x = clamp(s.x + s.vx, 0, vw - s.w);
     s.y = clamp(s.y + s.vy, 0, vh - s.h);
+
     apply(box);
   }
 
@@ -324,13 +365,23 @@ function drift() {
   for (const box of boxes) {
     const s = S.get(box);
     if (!s || s.stopped) continue;
+
     s.vx += (Math.random() - 0.5) * DRIFT_FORCE;
     s.vy += (Math.random() - 0.5) * DRIFT_FORCE;
   }
 }
 
 window.addEventListener("load", init);
-window.addEventListener("resize", spreadEvenly);
 
+window.addEventListener("resize", () => {
+  const anyStopped = boxes.some((box) => {
+    const s = S.get(box);
+    return s && s.stopped;
+  });
 
-
+  if (anyStopped) {
+    spreadStopEvenly();
+  } else {
+    spreadInitialGrid();
+  }
+});

@@ -1,0 +1,253 @@
+body {
+    background-color: rgb(224, 225, 222);
+    padding: 150px;
+}
+
+body.inModal {
+    padding: 0;
+    margin: 0;
+    overflow: hidden; 
+}
+
+#resetLayout {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+
+  padding: 10px 14px;
+  border: none;
+
+  background: rgb(6, 20, 98);
+  color: rgb(224, 225, 222);
+  font-family: "alte-haas-grotesk-bold", serif;
+  cursor: pointer;
+}
+
+#resetLayout:hover {
+  opacity: 0.85;
+}
+
+.intlaytwo {
+    width: auto;
+    height: auto;
+    padding: 50px;
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold";
+    background-color: rgb(185, 183, 164);
+    z-index: -1;
+}
+
+.intlayone {
+    width: auto;
+    height: auto;
+    padding: 50px;
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    font-family: "alte-haas-grotesk-bold", serif;
+    background-color: rgb(6, 20, 98);
+    z-index: 2;
+}
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modalOverlay.isOpen {
+    display: flex;
+}
+
+.modalWindow {
+    width: min(80vw, 720px);
+    height: min(80vh, 720px);
+    background: rgb(224, 225, 222);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+
+.modalClose {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: auto;
+    height: auto;
+    padding: 6px 10px;
+    border: none;
+    background: rgba(0,0,0,0.35);
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.modalFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: white;
+}
+
+.box {
+  position: fixed;
+  padding: 0;
+
+  width: auto;
+  height: auto;
+
+  max-width: clamp(140px, 18vw, 260px);
+  max-height: clamp(140px, 18vw, 260px);
+
+  background: transparent;
+  border: none;
+  overflow: visible;
+}
+
+
+.box2 {
+    position: fixed;
+    left: 500px;
+    top: 25%;
+    background: transparent;
+}
+
+
+.box img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-height: 100px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.box.caught img {
+    filter: brightness(0.45);
+}
+
+.box::after {
+    content: attr(data-word);
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    padding: 12px;
+    box-sizing: border-box;
+
+    color: rgb(224, 225, 222);
+    font-family: "alte-haas-grotesk-bold", serif;
+    font-size: 14px;
+    line-height: 1.2;
+
+    background: rgba(6, 20, 98, 0.25);
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.box:hover::after {
+    opacity: 1;
+}
+
+.box7 {
+  margin-left: auto;
+  margin-right: auto;
+
+  width: fit-content;
+  height: auto;
+  padding: 25px;
+
+  box-sizing: border-box;
+
+  background-color: rgb(6, 20, 98);
+  color: rgb(6, 20, 98);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 1; 
+  font-family: "alte-haas-grotesk-bold", serif;
+  text-align: center;
+}
+
+
+.imgWrap {
+  display: block;
+  width: fit-content;
+  height: fit-content;
+  pointer-events: none;
+}
+
+@keyframes vibrate {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-1px, 1px); }
+  40%  { transform: translate(1px, -1px); }
+  60%  { transform: translate(-1px, -1px); }
+  80%  { transform: translate(1px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+
+.box:hover .imgWrap {
+  animation: vibrate 0.15s infinite;
+  filter: brightness(0.5);
+}
+
+.funky {
+    font-family: "alte-haas-grotesk-bold", serif;
+    font-size: 4vmin;   
+    text-transform: lowercase;
+    color: rgb(6, 20, 98);
+    text-align: center;
+    max-width: 70vw;     
+    line-height: 1.2;
+}
+
+.word {
+  display: block;
+  margin-bottom: 0.3em;
+}
+
+.letter {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    transform:
+        translate(calc(var(--x, 0) * 1%), calc(var(--y, 0) * 1%))
+        rotate(calc(var(--r, 0) * 1deg))
+        scale(var(--s, 1));
+}
+
+#imageOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(224, 225, 222, 0.95);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+#imageOverlay.isOpen {
+  display: flex;
+}
+
+#imageOverlayImg {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+}

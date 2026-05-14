@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>characters</title>
+  <link rel="stylesheet" href="inspomoda.css" />
+
+  <style>
+    @font-face {
+      font-family: "alte-haas-grotesk-bold";
+      src: url("alte-haas-grotesk.bold.ttf");
+    }
+
+    @font-face {
+      font-family: "alte-haas-grotesk";
+      src: url("alte-haas-grotesk.regular.ttf");
+    }
+  </style>
+
+  <!-- <style>
+  #textScroll {
+    background-image: url("img/inspo/1.png");
+  }
+</style> -->
+</head>
+
+<body>
+  <textarea id="funkyText" style="display:none;">
+I love my cats. If I had to die for them, I would. 
+There's nothing I love more than their fluffy bodies, their purring, their warm, stinky little heads. 
+I love when Yeb curls up next to me while I’m asleep. 
+I love when I wake up in the middle of the night to something fluffy scratching at my face, 
+to something biting at my hair because he's confused about my long fur on my head versus the baldness of my body. 
+I love my cats, but I haven’t been feeling great recently. I haven’t been cleaning their litter boxes as much as usual, 
+but they don’t seem to mind. I love my cats, 
+but if I were to disappear one day, would it affect them that much?
+It seems as though when I was gone for a few weeks, 
+Yves was so stressed he started eating random things, 
+but was that from stress, or was he just bored with his surroundings?
+
+I wanted to dig into my own self; 
+if I could, 
+I would dig into other parts of myself to make up for the lack in different areas. 
+If I could dig out what was wrong, 
+could I glue those to the rest of me to fix those gaps?
+
+I think I have been emotionally constipated lately.
+My cats love me.
+Do they love me, or do they just love the food I feed them?
+If I left for longer, would they notice,
+If I ran through the woods without them, would they come find me?
+I haven't been sure of what I am as an individual lately,
+I used to be so afraid of what would happen to my body if I died.
+But recently I've realized it doesn't matter what happens to my body,
+If I won't be in it anymore, who cares? 
+I have lived in this body for 23 years now,
+It's limited my mobility,
+It's limited my location,
+It's limited my strength,
+If I were to break free of this body, would I be better?
+Would I still be human?
+If you took apart all that makes me up,
+Would my body still be me? 
+Without my soul, would I still be myself? 
+Without my love, would I still be me?
+Without hatred, 
+Without anger,
+Without passion, 
+Without joy,
+Am I still myself? 
+Recently, all I've felt is weight.
+Without any emotions its been weighing, 
+But is that weight a reflection of the rest of my soul? 
+Scruffed up, purple,
+
+That it cannot untangle itself.
+
+I haven’t been cleaning my cat's litter box as often as I should have been. 
+Do they need me to do that even?
+They seem only excited about me when there's food, 
+And if that's what they needed, I can offer my body to them, and would that make a difference? 
+Would they notice and miss me?
+Or would they appreciate my sacrifice and love me more?  
+
+  </textarea>
+
+  <div id="textScroll">
+    <div id="scrollInner"></div>
+  </div>
+
+  <img id="gifCursor" src="img/curser.gif" alt="" />
+
+  <audio id="pageSong" src="music/cat.mp3" loop preload="auto"></audio>
+
+<audio id="pageSong" src="music/cat.mp3" loop preload="auto"></audio>
+
+<script>
+  window.addEventListener("load", () => {
+    const song = document.getElementById("pageSong");
+    if (!song) return;
+
+    song.volume = 0.6;
+
+    song.play().catch(() => {
+      document.addEventListener("click", () => {
+        song.play();
+      }, { once: true });
+    });
+  });
+</script>
+
+  <script src="vinmoda.js"></script>
+</body>
+</html>
